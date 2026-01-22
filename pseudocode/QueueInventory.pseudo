@@ -1,0 +1,373 @@
+/**
+ * QUEUE-BASED INVENTORY MANAGEMENT SYSTEM
+ * Data Structure: Queue (FIFO - First In First Out)
+ * Purpose: Manage motorcycle inventory using queue operations
+ */
+
+// ALGORITHM: InventoryQueueManagement
+// Input: CSV file with inventory data
+// Output: Queue operations (enqueue, dequeue, order processing)
+
+BEGIN
+
+    // ========== VARIABLES ==========
+    DECLARE inventoryQueue AS Queue of InventoryItem     // Main queue
+    DECLARE processedCount AS Integer = 0                // Total processed orders
+    DECLARE choice AS Integer                            // User menu selection
+    
+    // ========== FUNCTION: Load Inventory from CSV ==========
+    // Input: filename (String)
+    // Output: Number of items loaded (Integer)
+    // Control Structures: WHILE loop, IF condition
+    
+    FUNCTION loadInventoryFromCSV(filename)
+        OPEN file filename FOR reading
+        SKIP first 2 lines  // Header lines
+        
+        // Control Structure: WHILE loop to read all records
+        WHILE NOT end of file DO
+            READ line from file
+            PARSE line INTO: date, stockLabel, brand, engineNumber, status
+            
+            // Control Structure: IF condition to validate data
+            IF data is valid (5 fields present) THEN
+                DECLARE item AS InventoryItem = NEW InventoryItem(date, stockLabel, brand, engineNumber, status)
+                ENQUEUE item to inventoryQueue  // Add to rear of queue
+            END IF
+        END WHILE
+        
+        CLOSE file
+        
+        // Output: Display confirmation
+        OUTPUT "Loaded ", SIZE(inventoryQueue), " items into queue."
+        RETURN SIZE(inventoryQueue)
+    END FUNCTION
+    
+    // ========== FUNCTION: Enqueue Item ==========
+    // Input: item (InventoryItem)
+    // Output: Confirmation message
+    
+    FUNCTION enqueueItem(item)
+        ENQUEUE item to inventoryQueue  // Add to rear of queue
+        // Output: Confirmation
+        OUTPUT "Item enqueued: ", item.engineNumber
+    END FUNCTION
+    
+    // ========== FUNCTION: Dequeue Item ==========
+    // Output: Dequeued item or NULL if empty
+    // Control Structure: IF-ELSE condition
+    
+    FUNCTION dequeueItem()
+        // Control Structure: Check if queue is empty
+        IF inventoryQueue IS EMPTY THEN
+            OUTPUT "Queue is empty!"
+            RETURN NULL
+        ELSE
+            DECLARE item AS InventoryItem = DEQUEUE from inventoryQueue
+            // Output: Display dequeued item
+            OUTPUT "\nDequeued item:"
+            OUTPUT item.toString()
+            RETURN item
+        END IF
+    END FUNCTION
+    
+    // ========== FUNCTION: Peek at Front Item ==========
+    // Output: Front item or NULL if empty
+    // Control Structure: IF-ELSE condition
+    
+    FUNCTION peekFront()
+        // Control Structure: Check if queue is empty
+        IF inventoryQueue IS EMPTY THEN
+            OUTPUT "Queue is empty!"
+            RETURN NULL
+        ELSE
+            DECLARE item AS InventoryItem = PEEK at inventoryQueue
+            // Output: Display front item
+            OUTPUT "\nFront item:"
+            OUTPUT item.toString()
+            RETURN item
+        END IF
+    END FUNCTION
+    
+    // ========== FUNCTION: Display Queue (Non-destructive) ==========
+    // Output: All items in queue
+    // Control Structure: IF-ELSE, FOR-EACH loop
+    
+    FUNCTION displayQueue()
+        // Output: Print header
+        OUTPUT "=== Inventory Queue (FIFO) ==="
+        OUTPUT "Queue Size: ", SIZE(inventoryQueue)
+        
+        // Control Structure: Check if empty
+        IF inventoryQueue IS EMPTY THEN
+            OUTPUT "Queue is empty!"
+            RETURN
+        END IF
+        
+        OUTPUT "Date         | Stock Label | Brand      | Engine Number  | Status"
+        OUTPUT "========================================================================"
+        
+        DECLARE position AS Integer = 1
+        
+        // Control Structure: FOR-EACH loop to display items
+        FOR EACH item IN inventoryQueue DO
+            OUTPUT position, ". ", item.toString()
+            position ← position + 1
+        END FOR
+    END FUNCTION
+    
+    // ========== FUNCTION: Process Orders ==========
+    // Input: numOrders (Integer - number of orders to process)
+    // Output: Number of orders processed
+    // Control Structure: WHILE loops, IF condition
+    
+    FUNCTION processOrders(numOrders)
+        DECLARE processed AS Integer = 0  // Variable: counter for processed orders
+        DECLARE tempQueue AS Queue of InventoryItem
+        
+        OUTPUT "\n=== Processing Orders ==="
+        
+        // Control Structure: Loop through queue
+        WHILE inventoryQueue IS NOT EMPTY AND processed < numOrders DO
+            DECLARE item AS InventoryItem = DEQUEUE from inventoryQueue
+            
+            // Control Structure: Check if on-hand (available for order)
+            IF item.status EQUALS "On-hand" THEN
+                processed ← processed + 1
+                processedCount ← processedCount + 1
+                // Output: Processing confirmation
+                OUTPUT "Processing order ", processed, ": ", item.brand, " - ", item.engineNumber
+                item.status ← "Sold"  // Update status
+            END IF
+            
+            ENQUEUE item to tempQueue  // Add to temp queue
+        END WHILE
+        
+        // Control Structure: Transfer remaining items
+        WHILE inventoryQueue IS NOT EMPTY DO
+            DECLARE item AS InventoryItem = DEQUEUE from inventoryQueue
+            ENQUEUE item to tempQueue
+        END WHILE
+        
+        // Restore to original queue
+        inventoryQueue ← tempQueue
+        
+        // Output: Summary
+        OUTPUT "\n--- Order Processing Summary ---"
+        OUTPUT "Total orders processed: ", processed
+        OUTPUT "Total orders processed today: ", processedCount
+        OUTPUT "Remaining queue size: ", SIZE(inventoryQueue)
+    END FUNCTION
+    
+    // ========== FUNCTION: Filter by Brand (Non-destructive) ==========
+    // Input: brandName (String)
+    // Output: Filtered items display
+    // Control Structure: FOR-EACH loop, IF condition
+    
+    FUNCTION filterByBrand(brandName)
+        DECLARE filteredQueue AS Queue of InventoryItem
+        DECLARE count AS Integer = 0
+        
+        // Control Structure: Process entire queue
+        FOR EACH item IN inventoryQueue DO
+            // Control Structure: Check brand match
+            IF item.brand EQUALS brandName THEN
+                ENQUEUE item to filteredQueue
+                count ← count + 1
+            END IF
+        END FOR
+        
+        // Output: Display filtered results
+        OUTPUT "\n=== Filtered Results: ", brandName, " ==="
+        OUTPUT "Found ", count, " items"
+        
+        // Control Structure: Display filtered items
+        IF filteredQueue IS NOT EMPTY THEN
+            OUTPUT "Date         | Stock Label | Brand      | Engine Number  | Status"
+            OUTPUT "========================================================================"
+            
+            DECLARE position AS Integer = 1
+            FOR EACH item IN filteredQueue DO
+                OUTPUT position, ". ", item.toString()
+                position ← position + 1
+            END FOR
+        END IF
+    END FUNCTION
+    
+    // ========== FUNCTION: Filter by Status ==========
+    // Input: status (String - "On-hand" or "Sold")
+    // Output: Filtered items display
+    // Control Structure: FOR-EACH loop, IF condition
+    
+    FUNCTION filterByStatus(status)
+        DECLARE filteredQueue AS Queue of InventoryItem
+        DECLARE count AS Integer = 0
+        
+        // Control Structure: Process entire queue
+        FOR EACH item IN inventoryQueue DO
+            // Control Structure: Check status match
+            IF item.status EQUALS status THEN
+                ENQUEUE item to filteredQueue
+                count ← count + 1
+            END IF
+        END FOR
+        
+        // Output: Display filtered results
+        OUTPUT "\n=== Filtered Results: ", status, " ==="
+        OUTPUT "Found ", count, " items"
+        
+        // Control Structure: Display filtered items
+        IF filteredQueue IS NOT EMPTY THEN
+            OUTPUT "Date         | Stock Label | Brand      | Engine Number  | Status"
+            OUTPUT "========================================================================"
+            
+            DECLARE position AS Integer = 1
+            FOR EACH item IN filteredQueue DO
+                OUTPUT position, ". ", item.toString()
+                position ← position + 1
+            END FOR
+        END IF
+    END FUNCTION
+    
+    // ========== FUNCTION: Count by Brand ==========
+    // Input: brandName (String)
+    // Output: Count of matching items (Integer)
+    // Control Structure: FOR-EACH loop, IF condition
+    
+    FUNCTION countByBrand(brandName)
+        DECLARE count AS Integer = 0
+        
+        // Control Structure: Count through queue
+        FOR EACH item IN inventoryQueue DO
+            // Control Structure: Check brand match
+            IF item.brand EQUALS brandName THEN
+                count ← count + 1
+            END IF
+        END FOR
+        
+        RETURN count
+    END FUNCTION
+    
+    // ========== MAIN PROGRAM ==========
+    
+    // Load data from CSV file
+    CALL loadInventoryFromCSV("csv/MotorPH Inventory Data - March 2023 Inventory Data.csv")
+    
+    // Control Structure: DO-WHILE loop for main menu
+    DO
+        // Output: Display menu
+        OUTPUT "\n=== Queue-Based Inventory Menu (FIFO) ==="
+        OUTPUT "1. Enqueue Item (Add to rear)"
+        OUTPUT "2. Dequeue Item (Remove from front)"
+        OUTPUT "3. Peek Front Item"
+        OUTPUT "4. Display Queue"
+        OUTPUT "5. Process Orders"
+        OUTPUT "6. Filter by Brand"
+        OUTPUT "7. Filter by Status"
+        OUTPUT "8. Count by Brand"
+        OUTPUT "9. Exit"
+        OUTPUT "Enter choice: "
+        
+        // Input: Get user choice
+        INPUT choice
+        
+        // Control Structure: SWITCH-CASE for menu options
+        SWITCH choice DO
+            CASE 1:
+                OUTPUT "Enter item details:"
+                INPUT date, label, brand, engine, status
+                DECLARE newItem AS InventoryItem = NEW InventoryItem(date, label, brand, engine, status)
+                CALL enqueueItem(newItem)
+                
+            CASE 2:
+                CALL dequeueItem()
+                
+            CASE 3:
+                CALL peekFront()
+                
+            CASE 4:
+                CALL displayQueue()
+                
+            CASE 5:
+                OUTPUT "Enter number of orders to process: "
+                INPUT numOrders
+                CALL processOrders(numOrders)
+                
+            CASE 6:
+                OUTPUT "Enter brand name: "
+                INPUT brandName
+                CALL filterByBrand(brandName)
+                
+            CASE 7:
+                OUTPUT "Enter status (On-hand/Sold): "
+                INPUT filterStatus
+                CALL filterByStatus(filterStatus)
+                
+            CASE 8:
+                OUTPUT "Enter brand name: "
+                INPUT countBrand
+                DECLARE count AS Integer = countByBrand(countBrand)
+                OUTPUT "Total ", countBrand, " items in queue: ", count
+                
+            CASE 9:
+                OUTPUT "Exiting Queue Inventory System..."
+                
+            DEFAULT:
+                OUTPUT "Invalid choice! Please try again."
+        END SWITCH
+        
+    WHILE choice ≠ 9  // Control Structure: Continue until exit
+    
+END
+
+// ========== ELEMENTS IDENTIFIED ==========
+/**
+ * INPUT ELEMENTS:
+ * - CSV file data (Date, Stock Label, Brand, Engine Number, Status)
+ * - User menu choice (Integer: 1-9)
+ * - New item data (5 fields - for enqueue operation)
+ * - Number of orders (Integer - for processing)
+ * - Brand name (String - for filtering/counting)
+ * - Status type (String - for filtering)
+ *
+ * OUTPUT ELEMENTS:
+ * - Menu displays (Formatted text)
+ * - Queue displays (FIFO order visualization)
+ * - Enqueue/Dequeue confirmations (Operation results)
+ * - Peek results (Front item display)
+ * - Order processing results (Items processed)
+ * - Filter results (Matching items)
+ * - Count results (Integer values)
+ * - Processing summaries (Statistics)
+ *
+ * CONTROL STRUCTURES:
+ * - WHILE loops: File reading, order processing, queue transfers
+ * - FOR-EACH: Queue display, filtering operations
+ * - IF-ELSE: Empty queue checks, status validation
+ * - SWITCH-CASE: Menu selection handling
+ * - DO-WHILE: Main menu loop
+ * - Nested conditions: Order processing with status check
+ *
+ * VARIABLES:
+ * - inventoryQueue: Queue of InventoryItem (main structure)
+ * - tempQueue: Queue of InventoryItem (temporary storage)
+ * - filteredQueue: Queue of InventoryItem (filter results)
+ * - processedCount: Integer (total processed orders)
+ * - processed: Integer (current batch processed)
+ * - count: Integer (counter variable)
+ * - choice: Integer (menu selection)
+ * - position: Integer (display position)
+ * - numOrders: Integer (orders to process)
+ * - item: InventoryItem (queue element)
+ * - brandName: String (filter parameter)
+ * - status: String (filter parameter)
+ *
+ * COMMENTS:
+ * - Function headers with purpose, input, output
+ * - Variable declarations with descriptions
+ * - Control structure annotations (FIFO emphasis)
+ * - Order processing logic explanations
+ * - Filter operation comments
+ * - Queue restoration comments
+ * - Element identification block
+ */

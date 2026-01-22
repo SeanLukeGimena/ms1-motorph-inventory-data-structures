@@ -1,0 +1,467 @@
+/**
+ * ARRAYLIST-BASED INVENTORY MANAGEMENT SYSTEM
+ * Data Structure: ArrayList (Dynamic Array)
+ * Purpose: Manage motorcycle inventory with dynamic operations and sorting
+ */
+
+// ALGORITHM: InventoryArrayListManagement
+// Input: CSV file with inventory data
+// Output: Dynamic list operations with sorting and filtering
+
+BEGIN
+
+    // ========== VARIABLES ==========
+    DECLARE inventoryList AS ArrayList of InventoryItem     // Dynamic list
+    DECLARE choice AS Integer                                // User menu selection
+    
+    // ========== FUNCTION: Load Inventory from CSV ==========
+    // Input: filename (String)
+    // Output: Number of items loaded (Integer)
+    // Control Structures: WHILE loop, IF condition
+    
+    FUNCTION loadInventoryFromCSV(filename)
+        OPEN file filename FOR reading
+        SKIP first 2 lines  // Header lines
+        
+        // Control Structure: WHILE loop to read all records
+        WHILE NOT end of file DO
+            READ line from file
+            PARSE line INTO: date, stockLabel, brand, engineNumber, status
+            
+            // Control Structure: IF condition to validate data
+            IF data is valid (5 fields present) THEN
+                DECLARE item AS InventoryItem = NEW InventoryItem(date, stockLabel, brand, engineNumber, status)
+                ADD item to inventoryList  // Add to ArrayList (automatic resizing)
+            END IF
+        END WHILE
+        
+        CLOSE file
+        
+        // Output: Display confirmation
+        OUTPUT "Loaded ", SIZE(inventoryList), " items into ArrayList."
+        RETURN SIZE(inventoryList)
+    END FUNCTION
+    
+    // ========== FUNCTION: Display All Items ==========
+    // Output: Formatted list of all items
+    // Control Structure: FOR-EACH loop
+    
+    FUNCTION displayAll()
+        // Output: Print header
+        OUTPUT "=== Inventory ArrayList ==="
+        OUTPUT "Total Items: ", SIZE(inventoryList)
+        OUTPUT "Date         | Stock Label | Brand      | Engine Number  | Status"
+        OUTPUT "========================================================================"
+        
+        DECLARE index AS Integer = 1  // Variable: position counter
+        
+        // Control Structure: FOR-EACH loop to iterate through list
+        FOR EACH item IN inventoryList DO
+            OUTPUT index, ". ", item.toString()
+            index ← index + 1
+        END FOR
+    END FUNCTION
+    
+    // ========== FUNCTION: Add Item ==========
+    // Input: item (InventoryItem)
+    // Output: Confirmation message
+    
+    FUNCTION addItem(item)
+        ADD item to inventoryList  // Add to end of list
+        // Output: Confirmation
+        OUTPUT "Item added successfully: ", item.engineNumber
+        OUTPUT "New size: ", SIZE(inventoryList)
+    END FUNCTION
+    
+    // ========== FUNCTION: Remove Item by Index ==========
+    // Input: index (Integer - 0-based)
+    // Output: TRUE if removed, FALSE if invalid index
+    // Control Structure: IF-ELSE condition
+    
+    FUNCTION removeItem(index)
+        // Control Structure: Validate index
+        IF index < 0 OR index ≥ SIZE(inventoryList) THEN
+            OUTPUT "Invalid index!"
+            RETURN FALSE
+        END IF
+        
+        DECLARE removedItem AS InventoryItem = REMOVE item at index from inventoryList
+        // Output: Confirmation
+        OUTPUT "\nRemoved item:"
+        OUTPUT removedItem.toString()
+        OUTPUT "New size: ", SIZE(inventoryList)
+        RETURN TRUE
+    END FUNCTION
+    
+    // ========== FUNCTION: Search by Brand ==========
+    // Input: brandName (String)
+    // Output: List of matching items
+    // Control Structure: FOR-EACH loop, IF condition
+    
+    FUNCTION searchByBrand(brandName)
+        DECLARE results AS ArrayList of InventoryItem  // Variable: results list
+        
+        // Control Structure: FOR-EACH loop to search
+        FOR EACH item IN inventoryList DO
+            // Control Structure: Check if brand matches
+            IF item.brand EQUALS brandName THEN
+                ADD item to results
+            END IF
+        END FOR
+        
+        // Output: Display results
+        OUTPUT "\n=== Search Results: ", brandName, " ==="
+        OUTPUT "Found ", SIZE(results), " items"
+        
+        // Control Structure: Display results if any found
+        IF results IS NOT EMPTY THEN
+            OUTPUT "Date         | Stock Label | Brand      | Engine Number  | Status"
+            OUTPUT "========================================================================"
+            
+            DECLARE index AS Integer = 1
+            FOR EACH item IN results DO
+                OUTPUT index, ". ", item.toString()
+                index ← index + 1
+            END FOR
+        END IF
+        
+        RETURN results
+    END FUNCTION
+    
+    // ========== FUNCTION: Filter by Status ==========
+    // Input: statusType (String - "On-hand" or "Sold")
+    // Output: List of matching items
+    // Control Structure: FOR-EACH loop, IF condition
+    
+    FUNCTION filterByStatus(statusType)
+        DECLARE filtered AS ArrayList of InventoryItem
+        
+        // Control Structure: FOR-EACH loop to filter
+        FOR EACH item IN inventoryList DO
+            // Control Structure: Check if status matches
+            IF item.status EQUALS statusType THEN
+                ADD item to filtered
+            END IF
+        END FOR
+        
+        RETURN filtered
+    END FUNCTION
+    
+    // ========== FUNCTION: Sort by Brand (Bubble Sort) ==========
+    // Output: Confirmation message
+    // Control Structure: Nested FOR loops, IF condition
+    
+    FUNCTION sortByBrand()
+        DECLARE n AS Integer = SIZE(inventoryList)
+        
+        // Control Structure: Bubble sort outer loop
+        FOR i ← 0 TO n - 2 DO
+            // Control Structure: Bubble sort inner loop
+            FOR j ← 0 TO n - i - 2 DO
+                // Control Structure: Compare adjacent items
+                IF inventoryList[j].brand > inventoryList[j + 1].brand THEN
+                    // Swap items
+                    DECLARE temp AS InventoryItem = inventoryList[j]
+                    inventoryList[j] ← inventoryList[j + 1]
+                    inventoryList[j + 1] ← temp
+                END IF
+            END FOR
+        END FOR
+        
+        // Output: Confirmation
+        OUTPUT "List sorted by brand (ascending order)"
+    END FUNCTION
+    
+    // ========== FUNCTION: Sort by Date (Bubble Sort) ==========
+    // Output: Confirmation message
+    // Control Structure: Nested FOR loops, IF condition
+    
+    FUNCTION sortByDate()
+        DECLARE n AS Integer = SIZE(inventoryList)
+        
+        // Control Structure: Bubble sort algorithm
+        FOR i ← 0 TO n - 2 DO
+            FOR j ← 0 TO n - i - 2 DO
+                // Control Structure: Compare dates
+                IF inventoryList[j].dateEntered > inventoryList[j + 1].dateEntered THEN
+                    // Swap items
+                    DECLARE temp AS InventoryItem = inventoryList[j]
+                    inventoryList[j] ← inventoryList[j + 1]
+                    inventoryList[j + 1] ← temp
+                END IF
+            END FOR
+        END FOR
+        
+        // Output: Confirmation
+        OUTPUT "List sorted by date (ascending order)"
+    END FUNCTION
+    
+    // ========== FUNCTION: Update Status ==========
+    // Input: engineNumber (String), newStatus (String)
+    // Output: TRUE if updated, FALSE if not found
+    // Control Structure: FOR loop, IF condition
+    
+    FUNCTION updateStatus(engineNumber, newStatus)
+        DECLARE found AS Boolean = FALSE
+        
+        // Control Structure: Search and update
+        FOR i ← 0 TO SIZE(inventoryList) - 1 DO
+            // Control Structure: Check if engine number matches
+            IF inventoryList[i].engineNumber EQUALS engineNumber THEN
+                DECLARE oldStatus AS String = inventoryList[i].status
+                inventoryList[i].status ← newStatus  // Update status
+                found ← TRUE
+                // Output: Confirmation
+                OUTPUT "\nStatus updated successfully!"
+                OUTPUT "Engine Number: ", engineNumber
+                OUTPUT "Old Status: ", oldStatus
+                OUTPUT "New Status: ", newStatus
+                BREAK  // Exit loop after finding
+            END IF
+        END FOR
+        
+        // Control Structure: Check if found
+        IF NOT found THEN
+            OUTPUT "Item not found with engine number: ", engineNumber
+        END IF
+        
+        RETURN found
+    END FUNCTION
+    
+    // ========== FUNCTION: Get Statistics ==========
+    // Output: Comprehensive statistics
+    // Control Structure: FOR-EACH loop, IF-ELSE conditions
+    
+    FUNCTION getStatistics()
+        DECLARE totalItems AS Integer = SIZE(inventoryList)
+        DECLARE onHandCount AS Integer = 0
+        DECLARE soldCount AS Integer = 0
+        DECLARE oldStockCount AS Integer = 0
+        DECLARE newStockCount AS Integer = 0
+        DECLARE brandCounts AS Map of String to Integer
+        
+        // Control Structure: Calculate statistics
+        FOR EACH item IN inventoryList DO
+            // Count by status
+            // Control Structure: IF-ELSE for status
+            IF item.status EQUALS "On-hand" THEN
+                onHandCount ← onHandCount + 1
+            ELSE IF item.status EQUALS "Sold" THEN
+                soldCount ← soldCount + 1
+            END IF
+            
+            // Count by stock label
+            // Control Structure: IF-ELSE for stock label
+            IF item.stockLabel EQUALS "Old" THEN
+                oldStockCount ← oldStockCount + 1
+            ELSE IF item.stockLabel EQUALS "New" THEN
+                newStockCount ← newStockCount + 1
+            END IF
+            
+            // Count by brand
+            DECLARE brand AS String = item.brand
+            // Control Structure: IF-ELSE for brand counting
+            IF brandCounts CONTAINS brand THEN
+                brandCounts[brand] ← brandCounts[brand] + 1
+            ELSE
+                brandCounts[brand] ← 1
+            END IF
+        END FOR
+        
+        // Output: Display statistics
+        OUTPUT "\n=== Comprehensive Inventory Statistics ==="
+        OUTPUT "\nGeneral Statistics:"
+        OUTPUT "  Total Items: ", totalItems
+        OUTPUT "  On-hand Items: ", onHandCount, " (", (onHandCount × 100.0 / totalItems), "%)"
+        OUTPUT "  Sold Items: ", soldCount, " (", (soldCount × 100.0 / totalItems), "%)"
+        
+        OUTPUT "\nStock Label Distribution:"
+        OUTPUT "  Old Stock: ", oldStockCount
+        OUTPUT "  New Stock: ", newStockCount
+        
+        OUTPUT "\nBrand Distribution:"
+        // Control Structure: FOR-EACH loop to display brand counts
+        FOR EACH (brand, count) IN brandCounts DO
+            OUTPUT "  ", brand, ": ", count, " (", (count × 100.0 / totalItems), "%)"
+        END FOR
+    END FUNCTION
+    
+    // ========== FUNCTION: Search by Engine Number ==========
+    // Input: engineNumber (String)
+    // Output: Found item or NULL
+    // Control Structure: FOR-EACH loop, IF condition
+    
+    FUNCTION searchByEngineNumber(engineNumber)
+        // Control Structure: Search through list
+        FOR EACH item IN inventoryList DO
+            // Control Structure: Check if match
+            IF item.engineNumber EQUALS engineNumber THEN
+                RETURN item
+            END IF
+        END FOR
+        
+        RETURN NULL  // Not found
+    END FUNCTION
+    
+    // ========== MAIN PROGRAM ==========
+    
+    // Load data from CSV file
+    CALL loadInventoryFromCSV("csv/MotorPH Inventory Data - March 2023 Inventory Data.csv")
+    
+    // Control Structure: DO-WHILE loop for main menu
+    DO
+        // Output: Display menu
+        OUTPUT "\n=== ArrayList-Based Inventory Menu ==="
+        OUTPUT "1. Display All Items"
+        OUTPUT "2. Add Item"
+        OUTPUT "3. Remove Item"
+        OUTPUT "4. Search by Brand"
+        OUTPUT "5. Search by Engine Number"
+        OUTPUT "6. Filter by Status"
+        OUTPUT "7. Sort by Brand"
+        OUTPUT "8. Sort by Date"
+        OUTPUT "9. Update Status"
+        OUTPUT "10. Get Statistics"
+        OUTPUT "11. Exit"
+        OUTPUT "Enter choice: "
+        
+        // Input: Get user choice
+        INPUT choice
+        
+        // Control Structure: SWITCH-CASE for menu options
+        SWITCH choice DO
+            CASE 1:
+                CALL displayAll()
+                
+            CASE 2:
+                OUTPUT "Enter item details:"
+                INPUT date, label, brand, engine, status
+                DECLARE newItem AS InventoryItem = NEW InventoryItem(date, label, brand, engine, status)
+                CALL addItem(newItem)
+                
+            CASE 3:
+                OUTPUT "Enter index to remove: "
+                INPUT index
+                CALL removeItem(index)
+                
+            CASE 4:
+                OUTPUT "Enter brand name: "
+                INPUT brandName
+                CALL searchByBrand(brandName)
+                
+            CASE 5:
+                OUTPUT "Enter engine number: "
+                INPUT engineNum
+                DECLARE result AS InventoryItem = searchByEngineNumber(engineNum)
+                
+                // Control Structure: IF-ELSE for search result
+                IF result IS NOT NULL THEN
+                    OUTPUT "\nItem Found:"
+                    OUTPUT result.toString()
+                ELSE
+                    OUTPUT "Item not found!"
+                END IF
+                
+            CASE 6:
+                OUTPUT "Enter status (On-hand/Sold): "
+                INPUT statusType
+                DECLARE filteredResults AS ArrayList = filterByStatus(statusType)
+                
+                OUTPUT "\n=== Filtered Results: ", statusType, " ==="
+                OUTPUT "Found ", SIZE(filteredResults), " items"
+                
+                // Control Structure: IF-ELSE to display results
+                IF filteredResults IS NOT EMPTY THEN
+                    DECLARE idx AS Integer = 1
+                    FOR EACH item IN filteredResults DO
+                        OUTPUT idx, ". ", item.toString()
+                        idx ← idx + 1
+                    END FOR
+                END IF
+                
+            CASE 7:
+                CALL sortByBrand()
+                CALL displayAll()
+                
+            CASE 8:
+                CALL sortByDate()
+                CALL displayAll()
+                
+            CASE 9:
+                OUTPUT "Enter engine number: "
+                INPUT updateEngine
+                OUTPUT "Enter new status: "
+                INPUT newStatus
+                CALL updateStatus(updateEngine, newStatus)
+                
+            CASE 10:
+                CALL getStatistics()
+                
+            CASE 11:
+                OUTPUT "Exiting ArrayList Inventory System..."
+                
+            DEFAULT:
+                OUTPUT "Invalid choice! Please try again."
+        END SWITCH
+        
+    WHILE choice ≠ 11  // Control Structure: Continue until exit
+    
+END
+
+// ========== ELEMENTS IDENTIFIED ==========
+/**
+ * INPUT ELEMENTS:
+ * - CSV file data (Date, Stock Label, Brand, Engine Number, Status)
+ * - User menu choice (Integer: 1-11)
+ * - New item data (5 fields - for add operation)
+ * - Index (Integer - for remove operation)
+ * - Brand name (String - for search/filter)
+ * - Engine number (String - for search/update)
+ * - Status type (String - for filter/update)
+ * - New status (String - for update operation)
+ *
+ * OUTPUT ELEMENTS:
+ * - Menu displays (Formatted text)
+ * - List displays (All items with numbering)
+ * - Search results (Matching items)
+ * - Filter results (Subset of items)
+ * - Sorted displays (Ordered data)
+ * - Update confirmations (Before/after status)
+ * - Statistics (Percentages and counts)
+ * - Add/Remove confirmations
+ *
+ * CONTROL STRUCTURES:
+ * - WHILE loops: File reading
+ * - FOR loops: Index-based operations, sorting algorithms
+ * - FOR-EACH loops: ArrayList iteration, filtering
+ * - IF-ELSE: Validation, status checks, brand matching
+ * - SWITCH-CASE: Menu selection handling
+ * - DO-WHILE: Main menu loop
+ * - Nested loops: Bubble sort implementation
+ *
+ * VARIABLES:
+ * - inventoryList: ArrayList of InventoryItem (main structure)
+ * - results: ArrayList of InventoryItem (search results)
+ * - filtered: ArrayList of InventoryItem (filter results)
+ * - brandCounts: Map of String to Integer (brand statistics)
+ * - choice: Integer (menu selection)
+ * - index: Integer (list index)
+ * - count: Integer (counter variable)
+ * - onHandCount: Integer (on-hand items)
+ * - soldCount: Integer (sold items)
+ * - oldStockCount: Integer (old stock count)
+ * - newStockCount: Integer (new stock count)
+ * - totalItems: Integer (total count)
+ * - n: Integer (list size for sorting)
+ * - temp: InventoryItem (swap variable)
+ * - found: Boolean (search flag)
+ *
+ * COMMENTS:
+ * - Function headers with purpose, input, output
+ * - Variable declarations with descriptions
+ * - Control structure annotations
+ * - Sorting algorithm explanations
+ * - Statistics calculation comments
+ * - Dynamic resizing notes
+ * - Element identification block
+ */

@@ -1,0 +1,249 @@
+/**
+ * ARRAY-BASED INVENTORY MANAGEMENT SYSTEM
+ * Data Structure: Fixed-size Array
+ * Purpose: Manage motorcycle inventory using array structure
+ */
+
+// ALGORITHM: InventoryArrayManagement
+// Input: CSV file with inventory data
+// Output: Display inventory items and perform operations
+
+BEGIN
+
+    // ========== VARIABLES ==========
+    DECLARE inventoryArray[100] AS Array of InventoryItem  // Fixed-size array
+    DECLARE itemCount AS Integer = 0                       // Current number of items
+    DECLARE choice AS Integer                              // User menu selection
+    DECLARE searchEngine AS String                         // Engine number for search
+    DECLARE MAX_SIZE AS Constant Integer = 100             // Maximum capacity
+    
+    // ========== FUNCTION: Load Inventory from CSV ==========
+    // Input: filename (String)
+    // Output: Number of items loaded (Integer)
+    // Control Structures: WHILE loop, IF condition
+    
+    FUNCTION loadInventoryFromCSV(filename)
+        OPEN file filename FOR reading
+        SKIP first 2 lines  // Header lines
+        
+        // Control Structure: WHILE loop to read all records
+        WHILE NOT end of file AND itemCount < MAX_SIZE DO
+            READ line from file
+            PARSE line INTO: date, stockLabel, brand, engineNumber, status
+            
+            // Control Structure: IF condition to validate data
+            IF data is valid (5 fields present) THEN
+                // Create new inventory item and add to array
+                inventoryArray[itemCount] ← NEW InventoryItem(date, stockLabel, brand, engineNumber, status)
+                itemCount ← itemCount + 1  // Increment counter
+            END IF
+        END WHILE
+        
+        CLOSE file
+        
+        // Output: Display confirmation
+        OUTPUT "Loaded ", itemCount, " items from CSV file."
+        RETURN itemCount
+    END FUNCTION
+    
+    // ========== FUNCTION: Display All Items ==========
+    // Output: Formatted list of all inventory items
+    // Control Structure: FOR loop
+    
+    FUNCTION displayAllItems()
+        // Output: Print header
+        OUTPUT "=== Inventory Items (Array Implementation) ==="
+        OUTPUT "Total Items: ", itemCount
+        OUTPUT "Date         | Stock Label | Brand      | Engine Number  | Status"
+        OUTPUT "========================================================================"
+        
+        // Control Structure: FOR loop to iterate through array
+        FOR i ← 0 TO itemCount - 1 DO
+            OUTPUT (i + 1), ". ", inventoryArray[i].toString()
+        END FOR
+    END FUNCTION
+    
+    // ========== FUNCTION: Search by Engine Number ==========
+    // Input: engineNum (String)
+    // Output: Found item or NULL
+    // Control Structure: FOR loop, IF condition
+    
+    FUNCTION searchByEngineNumber(engineNum)
+        // Control Structure: Linear search through array
+        FOR i ← 0 TO itemCount - 1 DO
+            // Control Structure: IF condition to check match
+            IF inventoryArray[i].engineNumber EQUALS engineNum THEN
+                RETURN inventoryArray[i]  // Return found item
+            END IF
+        END FOR
+        
+        RETURN NULL  // Not found
+    END FUNCTION
+    
+    // ========== FUNCTION: Count by Brand ==========
+    // Input: brandName (String)
+    // Output: Count of matching items (Integer)
+    // Control Structure: FOR loop, IF condition
+    
+    FUNCTION countByBrand(brandName)
+        DECLARE count AS Integer = 0  // Variable: counter
+        
+        // Control Structure: Loop through array
+        FOR i ← 0 TO itemCount - 1 DO
+            // Control Structure: IF condition to check brand
+            IF inventoryArray[i].brand EQUALS brandName THEN
+                count ← count + 1  // Increment counter
+            END IF
+        END FOR
+        
+        RETURN count
+    END FUNCTION
+    
+    // ========== FUNCTION: Count by Status ==========
+    // Input: status (String - "On-hand" or "Sold")
+    // Output: Count of matching items (Integer)
+    // Control Structure: FOR loop, IF condition
+    
+    FUNCTION countByStatus(status)
+        DECLARE count AS Integer = 0
+        
+        // Control Structure: Iterate through array
+        FOR i ← 0 TO itemCount - 1 DO
+            IF inventoryArray[i].status EQUALS status THEN
+                count ← count + 1
+            END IF
+        END FOR
+        
+        RETURN count
+    END FUNCTION
+    
+    // ========== FUNCTION: Display Statistics ==========
+    // Output: Statistics about inventory
+    // Control Structure: FOR loop
+    
+    FUNCTION displayStatistics()
+        OUTPUT "=== Inventory Statistics ==="
+        OUTPUT "Total Items: ", itemCount
+        OUTPUT "On-hand Items: ", countByStatus("On-hand")
+        OUTPUT "Sold Items: ", countByStatus("Sold")
+        
+        OUTPUT "\nBrand Distribution:"
+        DECLARE brands[5] AS Array = ["Honda", "Yamaha", "Suzuki", "Kawasaki", "Kymco"]
+        
+        // Control Structure: FOR loop through brands
+        FOR EACH brand IN brands DO
+            DECLARE count AS Integer = countByBrand(brand)
+            // Control Structure: IF condition to display only if count > 0
+            IF count > 0 THEN
+                OUTPUT "  ", brand, ": ", count
+            END IF
+        END FOR
+    END FUNCTION
+    
+    // ========== MAIN PROGRAM ==========
+    
+    // Load data from CSV file
+    CALL loadInventoryFromCSV("csv/MotorPH Inventory Data - March 2023 Inventory Data.csv")
+    
+    // Control Structure: DO-WHILE loop for main menu
+    DO
+        // Output: Display menu
+        OUTPUT "\n=== Array-Based Inventory Menu ==="
+        OUTPUT "1. Display All Items"
+        OUTPUT "2. Search by Engine Number"
+        OUTPUT "3. Count by Brand"
+        OUTPUT "4. Count by Status"
+        OUTPUT "5. Display Statistics"
+        OUTPUT "6. Exit"
+        OUTPUT "Enter choice: "
+        
+        // Input: Get user choice
+        INPUT choice
+        
+        // Control Structure: SWITCH-CASE for menu options
+        SWITCH choice DO
+            CASE 1:
+                CALL displayAllItems()
+                
+            CASE 2:
+                OUTPUT "Enter Engine Number: "
+                INPUT searchEngine
+                DECLARE result AS InventoryItem = searchByEngineNumber(searchEngine)
+                
+                // Control Structure: IF-ELSE for search result
+                IF result IS NOT NULL THEN
+                    OUTPUT "\nItem Found:"
+                    OUTPUT result.toString()
+                ELSE
+                    OUTPUT "Item not found!"
+                END IF
+                
+            CASE 3:
+                OUTPUT "Enter Brand Name: "
+                INPUT brandName
+                DECLARE brandCount AS Integer = countByBrand(brandName)
+                OUTPUT "Total ", brandName, " items: ", brandCount
+                
+            CASE 4:
+                OUTPUT "Enter Status (On-hand/Sold): "
+                INPUT statusInput
+                DECLARE statusCount AS Integer = countByStatus(statusInput)
+                OUTPUT "Total ", statusInput, " items: ", statusCount
+                
+            CASE 5:
+                CALL displayStatistics()
+                
+            CASE 6:
+                OUTPUT "Exiting Array Inventory System..."
+                
+            DEFAULT:
+                OUTPUT "Invalid choice! Please try again."
+        END SWITCH
+        
+    WHILE choice ≠ 6  // Control Structure: Continue until exit
+    
+END
+
+// ========== ELEMENTS IDENTIFIED ==========
+/**
+ * INPUT ELEMENTS:
+ * - CSV file data (Date, Stock Label, Brand, Engine Number, Status)
+ * - User menu choice (Integer: 1-6)
+ * - Search criteria (Engine number - String)
+ * - Brand name (String)
+ * - Status type (String)
+ *
+ * OUTPUT ELEMENTS:
+ * - Menu displays (Formatted text)
+ * - Inventory listings (Table format)
+ * - Search results (Item details or "not found")
+ * - Count results (Integer values)
+ * - Statistics (Summary information)
+ * - Confirmation messages
+ *
+ * CONTROL STRUCTURES:
+ * - WHILE loops: File reading, main operations
+ * - FOR loops: Array iteration, brand checking
+ * - IF-ELSE: Validation, conditional logic
+ * - SWITCH-CASE: Menu selection handling
+ * - DO-WHILE: Main menu loop
+ *
+ * VARIABLES:
+ * - inventoryArray[100]: Array of InventoryItem
+ * - itemCount: Integer (current count)
+ * - choice: Integer (menu selection)
+ * - searchEngine: String (search parameter)
+ * - brandName: String (brand filter)
+ * - status: String (status filter)
+ * - count: Integer (counter variable)
+ * - result: InventoryItem (search result)
+ * - MAX_SIZE: Constant Integer (100)
+ *
+ * COMMENTS:
+ * - Function headers with purpose, input, output
+ * - Variable declarations with descriptions
+ * - Control structure annotations
+ * - Inline explanations
+ * - Section headers
+ * - Element identification block
+ */

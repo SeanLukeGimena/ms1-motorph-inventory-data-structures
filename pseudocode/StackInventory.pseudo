@@ -1,0 +1,346 @@
+/**
+ * STACK-BASED INVENTORY MANAGEMENT SYSTEM
+ * Data Structure: Stack (LIFO - Last In First Out)
+ * Purpose: Manage motorcycle inventory using stack operations
+ */
+
+// ALGORITHM: InventoryStackManagement
+// Input: CSV file with inventory data
+// Output: Stack operations (push, pop, peek)
+
+BEGIN
+
+    // ========== VARIABLES ==========
+    DECLARE inventoryStack AS Stack of InventoryItem     // Main stack
+    DECLARE tempStorage AS List of InventoryItem         // Temporary loading storage
+    DECLARE choice AS Integer                            // User menu selection
+    
+    // ========== FUNCTION: Load Inventory from CSV ==========
+    // Input: filename (String)
+    // Output: Number of items loaded (Integer)
+    // Control Structures: WHILE loop, FOR-EACH loop
+    
+    FUNCTION loadInventoryFromCSV(filename)
+        OPEN file filename FOR reading
+        SKIP first 2 lines  // Header lines
+        
+        // Control Structure: WHILE loop to read all records
+        WHILE NOT end of file DO
+            READ line from file
+            PARSE line INTO: date, stockLabel, brand, engineNumber, status
+            
+            // Control Structure: IF condition to validate data
+            IF data is valid (5 fields present) THEN
+                DECLARE item AS InventoryItem = NEW InventoryItem(date, stockLabel, brand, engineNumber, status)
+                ADD item to tempStorage
+            END IF
+        END WHILE
+        
+        CLOSE file
+        
+        // Control Structure: FOR-EACH loop to push items onto stack
+        FOR EACH item IN tempStorage DO
+            PUSH item onto inventoryStack  // Push to stack (LIFO)
+        END FOR
+        
+        // Output: Display confirmation
+        OUTPUT "Loaded ", SIZE(inventoryStack), " items into stack."
+        RETURN SIZE(inventoryStack)
+    END FUNCTION
+    
+    // ========== FUNCTION: Push Item to Stack ==========
+    // Input: item (InventoryItem)
+    // Output: Confirmation message
+    
+    FUNCTION pushItem(item)
+        PUSH item onto inventoryStack  // Push to top of stack
+        // Output: Confirmation
+        OUTPUT "Item pushed to stack: ", item.engineNumber
+    END FUNCTION
+    
+    // ========== FUNCTION: Pop Item from Stack ==========
+    // Output: Popped item or NULL if empty
+    // Control Structure: IF-ELSE condition
+    
+    FUNCTION popItem()
+        // Control Structure: Check if stack is empty
+        IF inventoryStack IS EMPTY THEN
+            OUTPUT "Stack is empty!"
+            RETURN NULL
+        ELSE
+            DECLARE item AS InventoryItem = POP from inventoryStack
+            // Output: Display popped item
+            OUTPUT "\nPopped item:"
+            OUTPUT item.toString()
+            RETURN item
+        END IF
+    END FUNCTION
+    
+    // ========== FUNCTION: Peek at Top Item ==========
+    // Output: Top item or NULL if empty
+    // Control Structure: IF-ELSE condition
+    
+    FUNCTION peekTop()
+        // Control Structure: Check if stack is empty
+        IF inventoryStack IS EMPTY THEN
+            OUTPUT "Stack is empty!"
+            RETURN NULL
+        ELSE
+            DECLARE item AS InventoryItem = PEEK at inventoryStack
+            // Output: Display top item
+            OUTPUT "\nTop item:"
+            OUTPUT item.toString()
+            RETURN item
+        END IF
+    END FUNCTION
+    
+    // ========== FUNCTION: Display Stack (Non-destructive) ==========
+    // Output: All items in stack
+    // Control Structure: IF-ELSE, WHILE loops
+    
+    FUNCTION displayStack()
+        // Output: Print header
+        OUTPUT "=== Inventory Stack (LIFO) ==="
+        OUTPUT "Stack Size: ", SIZE(inventoryStack)
+        
+        // Control Structure: Check if empty
+        IF inventoryStack IS EMPTY THEN
+            OUTPUT "Stack is empty!"
+            RETURN
+        END IF
+        
+        OUTPUT "Date         | Stock Label | Brand      | Engine Number  | Status"
+        OUTPUT "========================================================================"
+        
+        // Create temporary stack for non-destructive display
+        DECLARE tempStack AS Stack of InventoryItem
+        DECLARE position AS Integer = 1
+        
+        // Control Structure: WHILE loop to pop all items for display
+        WHILE inventoryStack IS NOT EMPTY DO
+            DECLARE item AS InventoryItem = POP from inventoryStack
+            OUTPUT position, ". ", item.toString()
+            PUSH item onto tempStack  // Save to temp stack
+            position ← position + 1
+        END WHILE
+        
+        // Control Structure: WHILE loop to restore original stack
+        WHILE tempStack IS NOT EMPTY DO
+            DECLARE item AS InventoryItem = POP from tempStack
+            PUSH item onto inventoryStack
+        END WHILE
+    END FUNCTION
+    
+    // ========== FUNCTION: Process Sold Items ==========
+    // Output: Number of sold items processed (removed from stack)
+    // Control Structure: WHILE loops, IF condition
+    
+    FUNCTION processSoldItems()
+        DECLARE soldCount AS Integer = 0  // Variable: counter for sold items
+        DECLARE tempStack AS Stack of InventoryItem
+        
+        // Control Structure: Process entire stack
+        WHILE inventoryStack IS NOT EMPTY DO
+            DECLARE item AS InventoryItem = POP from inventoryStack
+            
+            // Control Structure: Check if sold
+            IF item.status EQUALS "Sold" THEN
+                soldCount ← soldCount + 1
+                // Output: Processing confirmation
+                OUTPUT "Processed sold item: ", item.engineNumber
+            ELSE
+                // Keep on-hand items
+                PUSH item onto tempStack
+            END IF
+        END WHILE
+        
+        // Control Structure: Restore on-hand items to stack
+        WHILE tempStack IS NOT EMPTY DO
+            DECLARE item AS InventoryItem = POP from tempStack
+            PUSH item onto inventoryStack
+        END WHILE
+        
+        // Output: Summary
+        OUTPUT "\nTotal sold items processed (removed): ", soldCount
+        OUTPUT "Remaining items in stack: ", SIZE(inventoryStack)
+    END FUNCTION
+    
+    // ========== FUNCTION: Search by Engine Number (Non-destructive) ==========
+    // Input: engineNum (String)
+    // Output: Found item or NULL
+    // Control Structure: WHILE loops, IF condition
+    
+    FUNCTION searchByEngineNumber(engineNum)
+        DECLARE tempStack AS Stack of InventoryItem
+        DECLARE foundItem AS InventoryItem = NULL
+        
+        // Control Structure: Search through stack
+        WHILE inventoryStack IS NOT EMPTY DO
+            DECLARE item AS InventoryItem = POP from inventoryStack
+            
+            // Control Structure: Check if match found
+            IF item.engineNumber EQUALS engineNum THEN
+                foundItem ← item  // Save found item
+            END IF
+            
+            PUSH item onto tempStack
+        END WHILE
+        
+        // Control Structure: Restore stack
+        WHILE tempStack IS NOT EMPTY DO
+            DECLARE item AS InventoryItem = POP from tempStack
+            PUSH item onto inventoryStack
+        END WHILE
+        
+        RETURN foundItem
+    END FUNCTION
+    
+    // ========== FUNCTION: Count by Brand (Non-destructive) ==========
+    // Input: brandName (String)
+    // Output: Count of matching items (Integer)
+    // Control Structure: WHILE loops, IF condition
+    
+    FUNCTION countByBrand(brandName)
+        DECLARE count AS Integer = 0
+        DECLARE tempStack AS Stack of InventoryItem
+        
+        // Control Structure: Count through stack
+        WHILE inventoryStack IS NOT EMPTY DO
+            DECLARE item AS InventoryItem = POP from inventoryStack
+            
+            // Control Structure: Check brand match
+            IF item.brand EQUALS brandName THEN
+                count ← count + 1
+            END IF
+            
+            PUSH item onto tempStack
+        END WHILE
+        
+        // Control Structure: Restore stack
+        WHILE tempStack IS NOT EMPTY DO
+            DECLARE item AS InventoryItem = POP from tempStack
+            PUSH item onto inventoryStack
+        END WHILE
+        
+        RETURN count
+    END FUNCTION
+    
+    // ========== MAIN PROGRAM ==========
+    
+    // Load data from CSV file
+    CALL loadInventoryFromCSV("csv/MotorPH Inventory Data - March 2023 Inventory Data.csv")
+    
+    // Control Structure: DO-WHILE loop for main menu
+    DO
+        // Output: Display menu
+        OUTPUT "\n=== Stack-Based Inventory Menu (LIFO) ==="
+        OUTPUT "1. Push Item (Add to top)"
+        OUTPUT "2. Pop Item (Remove from top)"
+        OUTPUT "3. Peek Top Item"
+        OUTPUT "4. Display Stack"
+        OUTPUT "5. Process Sold Items"
+        OUTPUT "6. Search by Engine Number"
+        OUTPUT "7. Count by Brand"
+        OUTPUT "8. Exit"
+        OUTPUT "Enter choice: "
+        
+        // Input: Get user choice
+        INPUT choice
+        
+        // Control Structure: SWITCH-CASE for menu options
+        SWITCH choice DO
+            CASE 1:
+                OUTPUT "Enter item details:"
+                INPUT date, label, brand, engine, status
+                DECLARE newItem AS InventoryItem = NEW InventoryItem(date, label, brand, engine, status)
+                CALL pushItem(newItem)
+                
+            CASE 2:
+                CALL popItem()
+                
+            CASE 3:
+                CALL peekTop()
+                
+            CASE 4:
+                CALL displayStack()
+                
+            CASE 5:
+                CALL processSoldItems()
+                
+            CASE 6:
+                OUTPUT "Enter Engine Number: "
+                INPUT searchEngine
+                DECLARE result AS InventoryItem = searchByEngineNumber(searchEngine)
+                
+                // Control Structure: IF-ELSE for search result
+                IF result IS NOT NULL THEN
+                    OUTPUT "\nItem Found:"
+                    OUTPUT result.toString()
+                ELSE
+                    OUTPUT "Item not found!"
+                END IF
+                
+            CASE 7:
+                OUTPUT "Enter Brand Name: "
+                INPUT brandName
+                DECLARE count AS Integer = countByBrand(brandName)
+                OUTPUT "Total ", brandName, " items in stack: ", count
+                
+            CASE 8:
+                OUTPUT "Exiting Stack Inventory System..."
+                
+            DEFAULT:
+                OUTPUT "Invalid choice! Please try again."
+        END SWITCH
+        
+    WHILE choice ≠ 8  // Control Structure: Continue until exit
+    
+END
+
+// ========== ELEMENTS IDENTIFIED ==========
+/**
+ * INPUT ELEMENTS:
+ * - CSV file data (Date, Stock Label, Brand, Engine Number, Status)
+ * - User menu choice (Integer: 1-8)
+ * - New item data (5 fields - for push operation)
+ * - Engine number (String - for search)
+ * - Brand name (String - for counting)
+ *
+ * OUTPUT ELEMENTS:
+ * - Menu displays (Formatted text)
+ * - Stack displays (LIFO order visualization)
+ * - Push/Pop confirmations (Operation results)
+ * - Peek results (Top item display)
+ * - Processing results (Sold items removed)
+ * - Search results (Found item or not found)
+ * - Count results (Integer values)
+ *
+ * CONTROL STRUCTURES:
+ * - WHILE loops: Stack processing, non-destructive operations
+ * - FOR-EACH: Initial loading from temporary storage
+ * - IF-ELSE: Empty stack checks, status validation
+ * - SWITCH-CASE: Menu selection handling
+ * - DO-WHILE: Main menu loop
+ * - Nested loops: Display and restore operations
+ *
+ * VARIABLES:
+ * - inventoryStack: Stack of InventoryItem (main structure)
+ * - tempStack: Stack of InventoryItem (temporary storage)
+ * - tempStorage: List of InventoryItem (loading buffer)
+ * - soldCount: Integer (sold items counter)
+ * - position: Integer (display position)
+ * - choice: Integer (menu selection)
+ * - item: InventoryItem (stack element)
+ * - foundItem: InventoryItem (search result)
+ * - count: Integer (counter variable)
+ * - engineNum: String (search parameter)
+ * - brandName: String (filter parameter)
+ *
+ * COMMENTS:
+ * - Function headers with purpose, input, output
+ * - Variable declarations with descriptions
+ * - Control structure annotations (LIFO emphasis)
+ * - Non-destructive operation explanations
+ * - Stack restoration comments
+ * - Element identification block
+ */

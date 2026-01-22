@@ -1,0 +1,328 @@
+/**
+ * LINKED LIST-BASED INVENTORY MANAGEMENT SYSTEM
+ * Data Structure: Singly Linked List
+ * Purpose: Manage motorcycle inventory using dynamic linked nodes
+ */
+
+// ALGORITHM: InventoryLinkedListManagement
+// Input: CSV file with inventory data
+// Output: Display and manipulate inventory in linked list
+
+BEGIN
+
+    // ========== NODE STRUCTURE ==========
+    STRUCTURE Node
+        DECLARE data AS InventoryItem     // Item data
+        DECLARE next AS Node              // Reference to next node
+    END STRUCTURE
+    
+    // ========== VARIABLES ==========
+    DECLARE head AS Node = NULL           // Pointer to first node
+    DECLARE tail AS Node = NULL           // Pointer to last node
+    DECLARE size AS Integer = 0           // Number of nodes
+    DECLARE choice AS Integer             // User menu selection
+    
+    // ========== FUNCTION: Add to End of List ==========
+    // Input: item (InventoryItem)
+    // Control Structure: IF-ELSE condition
+    
+    FUNCTION addToEnd(item)
+        DECLARE newNode AS Node = NEW Node(item)  // Create new node
+        
+        // Control Structure: Check if list is empty
+        IF head IS NULL THEN
+            head ← newNode
+            tail ← newNode
+        ELSE
+            tail.next ← newNode    // Link new node
+            tail ← newNode         // Update tail
+        END IF
+        
+        size ← size + 1  // Increment size
+    END FUNCTION
+    
+    // ========== FUNCTION: Load Inventory from CSV ==========
+    // Input: filename (String)
+    // Output: Number of items loaded (Integer)
+    // Control Structures: WHILE loop, IF condition
+    
+    FUNCTION loadInventoryFromCSV(filename)
+        OPEN file filename FOR reading
+        SKIP first 2 lines  // Header lines
+        
+        // Control Structure: WHILE loop to read all records
+        WHILE NOT end of file DO
+            READ line from file
+            PARSE line INTO: date, stockLabel, brand, engineNumber, status
+            
+            // Control Structure: IF condition to validate data
+            IF data is valid (5 fields present) THEN
+                DECLARE item AS InventoryItem = NEW InventoryItem(date, stockLabel, brand, engineNumber, status)
+                CALL addToEnd(item)  // Add to linked list
+            END IF
+        END WHILE
+        
+        CLOSE file
+        
+        // Output: Display confirmation
+        OUTPUT "Loaded ", size, " items into linked list."
+        RETURN size
+    END FUNCTION
+    
+    // ========== FUNCTION: Display All Items ==========
+    // Output: Formatted list of all items
+    // Control Structure: WHILE loop
+    
+    FUNCTION displayAll()
+        // Output: Print header
+        OUTPUT "=== Inventory Items (Linked List Implementation) ==="
+        OUTPUT "Total Items: ", size
+        OUTPUT "Date         | Stock Label | Brand      | Engine Number  | Status"
+        OUTPUT "========================================================================"
+        
+        // Variables for traversal
+        DECLARE current AS Node = head
+        DECLARE position AS Integer = 1
+        
+        // Control Structure: WHILE loop to traverse linked list
+        WHILE current IS NOT NULL DO
+            OUTPUT position, ". ", current.data.toString()
+            current ← current.next  // Move to next node
+            position ← position + 1
+        END WHILE
+    END FUNCTION
+    
+    // ========== FUNCTION: Search by Engine Number ==========
+    // Input: engineNum (String)
+    // Output: Found item or NULL
+    // Control Structure: WHILE loop, IF condition
+    
+    FUNCTION searchByEngineNumber(engineNum)
+        DECLARE current AS Node = head  // Variable: current node pointer
+        
+        // Control Structure: Traverse linked list
+        WHILE current IS NOT NULL DO
+            // Control Structure: Check if engine number matches
+            IF current.data.engineNumber EQUALS engineNum THEN
+                RETURN current.data  // Return found item
+            END IF
+            current ← current.next  // Move to next node
+        END WHILE
+        
+        RETURN NULL  // Not found
+    END FUNCTION
+    
+    // ========== FUNCTION: Delete by Engine Number ==========
+    // Input: engineNum (String)
+    // Output: TRUE if deleted, FALSE if not found
+    // Control Structure: WHILE loop, IF-ELSE conditions
+    
+    FUNCTION deleteByEngineNumber(engineNum)
+        DECLARE current AS Node = head
+        DECLARE previous AS Node = NULL
+        
+        // Control Structure: Traverse to find item
+        WHILE current IS NOT NULL DO
+            // Control Structure: Check if engine number matches
+            IF current.data.engineNumber EQUALS engineNum THEN
+                // Control Structure: Check if deleting head node
+                IF previous IS NULL THEN
+                    head ← current.next
+                    // Control Structure: If list becomes empty
+                    IF head IS NULL THEN
+                        tail ← NULL
+                    END IF
+                ELSE
+                    previous.next ← current.next
+                    // Control Structure: If deleting tail
+                    IF current.next IS NULL THEN
+                        tail ← previous
+                    END IF
+                END IF
+                
+                size ← size - 1  // Decrement size
+                RETURN TRUE      // Deletion successful
+            END IF
+            
+            previous ← current
+            current ← current.next
+        END WHILE
+        
+        RETURN FALSE  // Not found
+    END FUNCTION
+    
+    // ========== FUNCTION: Get Item at Position ==========
+    // Input: position (Integer - 1-based index)
+    // Output: Item at position or NULL
+    // Control Structure: IF condition, WHILE loop
+    
+    FUNCTION getAtPosition(position)
+        // Control Structure: Validate position
+        IF position < 1 OR position > size THEN
+            RETURN NULL
+        END IF
+        
+        DECLARE current AS Node = head
+        DECLARE index AS Integer = 1
+        
+        // Control Structure: Traverse to position
+        WHILE index < position DO
+            current ← current.next
+            index ← index + 1
+        END WHILE
+        
+        RETURN current.data
+    END FUNCTION
+    
+    // ========== FUNCTION: Count by Brand ==========
+    // Input: brandName (String)
+    // Output: Count of matching items (Integer)
+    // Control Structure: WHILE loop, IF condition
+    
+    FUNCTION countByBrand(brandName)
+        DECLARE count AS Integer = 0
+        DECLARE current AS Node = head
+        
+        // Control Structure: Traverse linked list
+        WHILE current IS NOT NULL DO
+            // Control Structure: Check brand match
+            IF current.data.brand EQUALS brandName THEN
+                count ← count + 1
+            END IF
+            current ← current.next
+        END WHILE
+        
+        RETURN count
+    END FUNCTION
+    
+    // ========== MAIN PROGRAM ==========
+    
+    // Load data from CSV file
+    CALL loadInventoryFromCSV("csv/MotorPH Inventory Data - March 2023 Inventory Data.csv")
+    
+    // Control Structure: DO-WHILE loop for main menu
+    DO
+        // Output: Display menu
+        OUTPUT "\n=== Linked List-Based Inventory Menu ==="
+        OUTPUT "1. Display All Items"
+        OUTPUT "2. Search by Engine Number"
+        OUTPUT "3. Delete by Engine Number"
+        OUTPUT "4. Get Item at Position"
+        OUTPUT "5. Count by Brand"
+        OUTPUT "6. Display List Size"
+        OUTPUT "7. Exit"
+        OUTPUT "Enter choice: "
+        
+        // Input: Get user choice
+        INPUT choice
+        
+        // Control Structure: SWITCH-CASE for menu options
+        SWITCH choice DO
+            CASE 1:
+                CALL displayAll()
+                
+            CASE 2:
+                OUTPUT "Enter Engine Number: "
+                INPUT engineNum
+                DECLARE result AS InventoryItem = searchByEngineNumber(engineNum)
+                
+                // Control Structure: IF-ELSE for search result
+                IF result IS NOT NULL THEN
+                    OUTPUT "\nItem Found:"
+                    OUTPUT result.toString()
+                ELSE
+                    OUTPUT "Item not found!"
+                END IF
+                
+            CASE 3:
+                OUTPUT "Enter Engine Number to delete: "
+                INPUT deleteEngine
+                DECLARE deleted AS Boolean = deleteByEngineNumber(deleteEngine)
+                
+                // Control Structure: IF-ELSE for deletion result
+                IF deleted THEN
+                    OUTPUT "Item deleted successfully!"
+                    OUTPUT "New size: ", size
+                ELSE
+                    OUTPUT "Item not found!"
+                END IF
+                
+            CASE 4:
+                OUTPUT "Enter position (1 to ", size, "): "
+                INPUT position
+                DECLARE item AS InventoryItem = getAtPosition(position)
+                
+                // Control Structure: IF-ELSE for result
+                IF item IS NOT NULL THEN
+                    OUTPUT "\nItem at position ", position, ":"
+                    OUTPUT item.toString()
+                ELSE
+                    OUTPUT "Invalid position!"
+                END IF
+                
+            CASE 5:
+                OUTPUT "Enter Brand Name: "
+                INPUT brandName
+                DECLARE count AS Integer = countByBrand(brandName)
+                OUTPUT "Total ", brandName, " items: ", count
+                
+            CASE 6:
+                OUTPUT "Current list size: ", size
+                
+            CASE 7:
+                OUTPUT "Exiting Linked List Inventory System..."
+                
+            DEFAULT:
+                OUTPUT "Invalid choice! Please try again."
+        END SWITCH
+        
+    WHILE choice ≠ 7  // Control Structure: Continue until exit
+    
+END
+
+// ========== ELEMENTS IDENTIFIED ==========
+/**
+ * INPUT ELEMENTS:
+ * - CSV file data (Date, Stock Label, Brand, Engine Number, Status)
+ * - User menu choice (Integer: 1-7)
+ * - Engine number (String - for search/delete)
+ * - Position (Integer - for retrieval)
+ * - Brand name (String - for counting)
+ *
+ * OUTPUT ELEMENTS:
+ * - Menu displays (Formatted text)
+ * - Linked list traversal (Node-by-node display)
+ * - Search results (Item details or "not found")
+ * - Deletion confirmations (Success/failure messages)
+ * - Position-based retrieval results
+ * - List size information
+ *
+ * CONTROL STRUCTURES:
+ * - WHILE loops: File reading, list traversal, searching
+ * - IF-ELSE: Node validation, empty list checks, deletion logic
+ * - SWITCH-CASE: Menu selection handling
+ * - DO-WHILE: Main menu loop
+ * - Nested conditions: Deletion of head/tail nodes
+ *
+ * VARIABLES:
+ * - head: Node (first node reference)
+ * - tail: Node (last node reference)
+ * - size: Integer (number of nodes)
+ * - current: Node (traversal pointer)
+ * - previous: Node (previous node reference)
+ * - newNode: Node (newly created node)
+ * - choice: Integer (menu selection)
+ * - position: Integer (node position)
+ * - item: InventoryItem (data payload)
+ * - engineNum: String (search parameter)
+ * - brandName: String (filter parameter)
+ *
+ * COMMENTS:
+ * - Structure definition comments
+ * - Function headers with purpose, input, output
+ * - Variable declarations with descriptions
+ * - Control structure annotations
+ * - Traversal logic explanations
+ * - Deletion logic comments
+ * - Element identification block
+ */
