@@ -132,9 +132,9 @@
 #### A. Array Implementation (ArrayInventory.java)
 ```
 Variables:
-- inventoryArray[] : InventoryItem[] - Fixed-size array
-- itemCount : int - Current number of items
-- MAX_SIZE : final int - Maximum capacity (100)
+- inventoryArray[] : InventoryItem[] - FIXED-SIZE array (MAX_SIZE = 100)
+- itemCount : int - MANUAL size tracking (must increment ourselves)
+- MAX_SIZE : final int - HARD LIMIT: Maximum capacity (100)
 - scanner : Scanner - User input
 - choice : int - Menu selection
 - engineNum : String - Search parameter
@@ -142,7 +142,43 @@ Variables:
 - status : String - Status filter
 - count : int - Counter variable
 - result : InventoryItem - Search result
+
+KEY CHARACTERISTICS:
+✗ NO automatic resizing - fixed at 100 items
+✗ MUST manually track size with itemCount
+✗ MUST check capacity before adding: if (itemCount < MAX_SIZE)
 ```
+
+#### E. ArrayList Implementation (ArrayListInventory.java)
+```
+Variables:
+- inventoryList : ArrayList<InventoryItem> - DYNAMIC list (unlimited size)
+- results : ArrayList<InventoryItem> - Search results
+- filtered : ArrayList<InventoryItem> - Filter results
+- brandCounts : Map<String, Integer> - Brand statistics
+- scanner : Scanner - User input
+- choice : int - Menu selection
+- index : int - List index
+- count : int - Counter variable
+- onHandCount : int - On-hand items
+
+KEY CHARACTERISTICS:
+✓ AUTOMATIC resizing - no size limit
+✓ Built-in .size() method - no manual tracking needed
+✓ NO capacity check needed - grows automatically
+✓ Rich methods: .add(), .remove(), .contains(), .sort()
+```
+
+### 📊 Array vs ArrayList Variable Comparison
+
+| Aspect | Array | ArrayList |
+|--------|-------|-----------|
+| **Data Storage** | `InventoryItem[]` | `ArrayList<InventoryItem>` |
+| **Size Variable** | `int itemCount` (manual) | `.size()` (automatic) |
+| **Capacity Limit** | `MAX_SIZE = 100` | No limit |
+| **Size Check** | `if (itemCount < MAX_SIZE)` | Not needed |
+| **Adding Item** | `arr[itemCount++] = item` | `list.add(item)` |
+| **Getting Size** | `itemCount` | `list.size()` |
 
 #### B. Linked List Implementation (LinkedListInventory.java)
 ```
@@ -185,19 +221,6 @@ Variables:
 - choice : int - Menu selection
 - numOrders : int - Orders to process
 ```
-
-#### E. ArrayList Implementation (ArrayListInventory.java)
-```
-Variables:
-- inventoryList : ArrayList<InventoryItem> - Main list
-- results : ArrayList<InventoryItem> - Search results
-- filtered : ArrayList<InventoryItem> - Filter results
-- brandCounts : Map<String, Integer> - Brand statistics
-- scanner : Scanner - User input
-- choice : int - Menu selection
-- index : int - List index
-- count : int - Counter variable
-- onHandCount : int - On-hand items
 - soldCount : int - Sold items
 - oldStockCount : int - Old stock count
 - newStockCount : int - New stock count

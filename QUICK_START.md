@@ -38,11 +38,11 @@ You'll see:
 ============================================================
 
 Select Data Structure Implementation:
-1. Array (Fixed-size array)
+1. Array (Fixed-size array - MAX 100 items, manual tracking)
 2. Linked List (Dynamic linked nodes)
 3. Stack (LIFO - Last In First Out)
 4. Queue (FIFO - First In First Out)
-5. ArrayList (Dynamic array)
+5. ArrayList (Dynamic array - unlimited size, automatic management)
 6. Exit
 
 Enter your choice:

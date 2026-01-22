@@ -6,10 +6,28 @@ This project demonstrates the implementation of five different data structures (
 
 ### Data Structures Implemented
 
+#### 🔍 Array vs ArrayList Comparison
+
+| Feature | Array | ArrayList |
+|---------|-------|----------|
+| **Size** | Fixed (100 max) | Dynamic (unlimited) |
+| **Declaration** | `InventoryItem[100]` | `ArrayList<InventoryItem>()` |
+| **Size Tracking** | Manual `itemCount++` | Automatic `.size()` |
+| **Adding Items** | `arr[itemCount++] = item` | `list.add(item)` |
+| **Size Check** | `if (itemCount < MAX_SIZE)` | Not needed |
+| **Memory** | Allocated upfront | Grows as needed |
+| **Performance** | Faster access | Slight overhead |
+| **Use Case** | Known, fixed data | Dynamic, changing data |
+
+#### All Implementations:
+
 1. **Array (ArrayInventory.java)**
-   - Fixed-size array implementation
+   - **Fixed-size array** implementation (MAX_SIZE = 100)
+   - **Manual size tracking** with itemCount variable
+   - **Limitation**: Cannot exceed capacity, must check size before adding
    - Linear search algorithm
    - Operations: Display, Search, Count by brand/status, Statistics
+   - Best for: **Known, static data sets**
 
 2. **Linked List (LinkedListInventory.java)**
    - Dynamic singly linked list with nodes
@@ -24,8 +42,11 @@ This project demonstrates the implementation of five different data structures (
    - Operations: Enqueue, Dequeue, Peek, Display, Process orders, Filter
 
 5. **ArrayList (ArrayListInventory.java)**
-   - Dynamic array implementation
-   - Operations: Add, Remove, Search, Filter, Sort (Bubble sort), Update, Statistics
+   - **Dynamic array** implementation (unlimited capacity)
+   - **Automatic size management** with built-in .size() method
+   - **No size limitations**: Grows automatically as needed
+   - Rich operations: Add, Remove, Search, Filter, Sort (Bubble sort), Update, Statistics
+   - Best for: **Unknown or changing data sets**
 
 ### File Structure
 ```

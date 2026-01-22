@@ -63,13 +63,29 @@ MS1 MotorPH Inventory Data Structure and Algorithm Proposal/
 
 ### 🎯 DATA STRUCTURES IMPLEMENTED
 
+#### Key Distinction: Array vs ArrayList
+
+**Array Implementation:**
+- ⚠️ **FIXED SIZE**: Hard-coded maximum of 100 items
+- 📊 **MANUAL TRACKING**: Must increment `itemCount` manually
+- 🚫 **SIZE LIMITATION**: Must check `itemCount < MAX_SIZE` before adding
+- ⚡ **FAST**: Direct memory access, no overhead
+- 📝 **SIMPLE**: Basic operations only (display, search, count)
+
+**ArrayList Implementation:**
+- ✅ **DYNAMIC SIZE**: Unlimited capacity, grows automatically
+- 🔄 **AUTOMATIC**: Built-in `.size()` method, no manual tracking
+- 🎯 **NO LIMITS**: No size check needed, adds items freely
+- 🔧 **RICH**: Advanced operations (add, remove, sort, filter, update)
+- 💡 **FLEXIBLE**: Can insert/delete at any position
+
 | # | Data Structure | File | Features | Status |
 |---|----------------|------|----------|--------|
-| 1 | **Array** | ArrayInventory.java | Fixed-size, Linear search, Statistics | ✅ Working |
+| 1 | **Array** | ArrayInventory.java | **FIXED SIZE (100)**, Manual tracking, Linear search | ✅ Working |
 | 2 | **Linked List** | LinkedListInventory.java | Dynamic nodes, Insert/Delete, Traversal | ✅ Working |
 | 3 | **Stack** | StackInventory.java | LIFO, Push/Pop, Process sold items | ✅ Working |
 | 4 | **Queue** | QueueInventory.java | FIFO, Enqueue/Dequeue, Order processing | ✅ Working |
-| 5 | **ArrayList** | ArrayListInventory.java | Dynamic, Sorting, Filtering, Statistics | ✅ Working |
+| 5 | **ArrayList** | ArrayListInventory.java | **DYNAMIC SIZE**, Auto-management, Sorting, Filtering | ✅ Working |
 
 ---
 
