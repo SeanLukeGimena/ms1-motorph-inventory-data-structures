@@ -51,11 +51,11 @@ public class ArrayInventory {
                     // Create new inventory item and add to array
                     // ARRAY OPERATION: Manual index assignment - must use itemCount
                     inventoryArray[itemCount] = new InventoryItem(
-                        parts[0].trim(),  // dateEntered
-                        parts[1].trim(),  // stockLabel
-                        parts[2].trim(),  // brand
-                        parts[3].trim(),  // engineNumber
-                        parts[4].trim()   // status
+                        data[0].trim(),  // dateEntered
+                        data[1].trim(),  // stockLabel
+                        data[2].trim(),  // brand
+                        data[3].trim(),  // engineNumber
+                        data[4].trim()   // status
                     );
                     itemCount++;  // MANUAL INCREMENT: Must track size ourselves
                 }
