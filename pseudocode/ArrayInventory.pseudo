@@ -1,21 +1,29 @@
 /**
  * ARRAY-BASED INVENTORY MANAGEMENT SYSTEM
  * Data Structure: Fixed-size Array
- * Purpose: Manage motorcycle inventory using array structure
+ * Purpose: Basic inventory management with static size and simple operations
+ * 
+ * KEY CHARACTERISTICS:
+ * - FIXED SIZE: Cannot grow beyond initial capacity (100 items)
+ * - MANUAL MANAGEMENT: Must track count manually with itemCount variable
+ * - SIMPLE OPERATIONS: Basic search and count only
+ * - NO DYNAMIC FEATURES: Cannot easily add/remove items or sort
+ * - FAST ACCESS: Direct index access for retrieval
  */
 
 // ALGORITHM: InventoryArrayManagement
 // Input: CSV file with inventory data
-// Output: Display inventory items and perform operations
+// Output: Display inventory items and perform basic search operations
 
 BEGIN
 
     // ========== VARIABLES ==========
-    DECLARE inventoryArray[100] AS Array of InventoryItem  // Fixed-size array
-    DECLARE itemCount AS Integer = 0                       // Current number of items
+    // NOTE: Array requires fixed size declaration and manual tracking
+    DECLARE inventoryArray[100] AS Array of InventoryItem  // FIXED-SIZE: Cannot exceed 100
+    DECLARE itemCount AS Integer = 0                       // MANUAL TRACKING: Must increment manually
     DECLARE choice AS Integer                              // User menu selection
     DECLARE searchEngine AS String                         // Engine number for search
-    DECLARE MAX_SIZE AS Constant Integer = 100             // Maximum capacity
+    DECLARE MAX_SIZE AS Constant Integer = 100             // LIMITATION: Hard-coded maximum capacity
     
     // ========== FUNCTION: Load Inventory from CSV ==========
     // Input: filename (String)
@@ -26,18 +34,24 @@ BEGIN
         OPEN file filename FOR reading
         SKIP first 2 lines  // Header lines
         
-        // Control Structure: WHILE loop to read all records
+        // Control Structure: WHILE loop with SIZE LIMITATION CHECK
+        // ARRAY LIMITATION: Must check if array is full (itemCount < MAX_SIZE)
         WHILE NOT end of file AND itemCount < MAX_SIZE DO
             READ line from file
             PARSE line INTO: date, stockLabel, brand, engineNumber, status
             
             // Control Structure: IF condition to validate data
             IF data is valid (5 fields present) THEN
-                // Create new inventory item and add to array
+                // ARRAY OPERATION: Manual index assignment
                 inventoryArray[itemCount] ← NEW InventoryItem(date, stockLabel, brand, engineNumber, status)
-                itemCount ← itemCount + 1  // Increment counter
+                itemCount ← itemCount + 1  // MANUAL INCREMENT: Must track size ourselves
             END IF
         END WHILE
+        
+        // ARRAY LIMITATION: Warn if file exceeded capacity
+        IF NOT end of file THEN
+            OUTPUT "WARNING: Array full! Some items not loaded (max capacity: ", MAX_SIZE, ")"
+        END IF
         
         CLOSE file
         

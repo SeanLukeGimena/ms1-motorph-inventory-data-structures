@@ -4,12 +4,19 @@ import java.util.Scanner;
 /**
  * ArrayInventory - Manages inventory using a fixed-size Array
  * Demonstrates: Array data structure, linear search, and basic operations
+ * 
+ * KEY LIMITATIONS OF ARRAYS:
+ * - FIXED SIZE: Must declare maximum capacity upfront (MAX_SIZE = 100)
+ * - MANUAL TRACKING: Must maintain itemCount variable ourselves
+ * - NO DYNAMIC OPS: Cannot easily add/remove items in middle
+ * - SIZE CHECK: Must always verify array isn't full before adding
+ * - SIMPLE: Best for static, predictable data sets
  */
 public class ArrayInventory {
     // Variables - Fixed size array and item counter
-    private static final int MAX_SIZE = 100;
-    private InventoryItem[] inventoryArray;
-    private int itemCount;
+    private static final int MAX_SIZE = 100;  // LIMITATION: Hard-coded maximum capacity
+    private InventoryItem[] inventoryArray;   // FIXED-SIZE array
+    private int itemCount;                     // MANUAL TRACKING: Must increment ourselves
     private Scanner scanner;
     
     // Constructor
@@ -33,7 +40,8 @@ public class ArrayInventory {
             br.readLine();
             br.readLine();
             
-            // Control Structure: While loop to read all records
+            // Control Structure: While loop with ARRAY SIZE LIMITATION
+            // ARRAY LIMITATION: Must check if array is full (itemCount < MAX_SIZE)
             while ((line = br.readLine()) != null && itemCount < MAX_SIZE) {
                 // Parse CSV line
                 String[] data = line.split(",");
@@ -41,14 +49,15 @@ public class ArrayInventory {
                 // Control Structure: If condition to validate data
                 if (data.length >= 5) {
                     // Create new inventory item and add to array
+                    // ARRAY OPERATION: Manual index assignment - must use itemCount
                     inventoryArray[itemCount] = new InventoryItem(
-                        data[0].trim(),  // dateEntered
-                        data[1].trim(),  // stockLabel
-                        data[2].trim(),  // brand
-                        data[3].trim(),  // engineNumber
-                        data[4].trim()   // status
+                        parts[0].trim(),  // dateEntered
+                        parts[1].trim(),  // stockLabel
+                        parts[2].trim(),  // brand
+                        parts[3].trim(),  // engineNumber
+                        parts[4].trim()   // status
                     );
-                    itemCount++;  // Increment counter
+                    itemCount++;  // MANUAL INCREMENT: Must track size ourselves
                 }
             }
             

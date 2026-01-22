@@ -7,11 +7,20 @@ import java.util.Scanner;
 /**
  * ArrayListInventory - Manages inventory using ArrayList (dynamic array)
  * Demonstrates: ArrayList data structure, dynamic resizing, sorting, filtering
+ * 
+ * KEY ADVANTAGES OF ARRAYLIST:
+ * - DYNAMIC SIZE: Automatically grows as needed - no size limit
+ * - AUTOMATIC MANAGEMENT: Built-in .size() method, no manual counting
+ * - RICH OPERATIONS: .add(), .remove(), .contains(), .sort() methods
+ * - FLEXIBLE: Can insert/delete items at any position easily
+ * - CONVENIENT: Many built-in methods for common operations
  */
 public class ArrayListInventory {
     // Variables - ArrayList for inventory and scanner for input
-    private ArrayList<InventoryItem> inventoryList;
+    private ArrayList<InventoryItem> inventoryList;  // DYNAMIC: Grows automatically, no size limit
     private Scanner scanner;
+    // NO itemCount variable needed - ArrayList has built-in .size() method
+    // NO MAX_SIZE constant needed - unlimited capacity
     
     // Constructor
     public ArrayListInventory() {
@@ -33,22 +42,25 @@ public class ArrayListInventory {
             br.readLine();
             br.readLine();
             
-            // Control Structure: While loop to read all records
-            while ((line = br.readLine()) != null) {
+            // Control Structure: While loop - NO SIZE LIMIT CHECK NEEDED
+            // ARRAYLIST ADVANTAGE: No need to check capacity, grows automatically
+            while ((line = br.readLine()) != null) {  // Notice: No size check like in Array!
                 // Parse CSV line
                 String[] data = line.split(",");
                 
                 // Control Structure: If condition to validate data
                 if (data.length >= 5) {
                     // Create new inventory item
+                    // ARRAYLIST OPERATION: Simple .add() method handles everything
                     InventoryItem item = new InventoryItem(
-                        data[0].trim(),  // dateEntered
-                        data[1].trim(),  // stockLabel
-                        data[2].trim(),  // brand
-                        data[3].trim(),  // engineNumber
-                        data[4].trim()   // status
+                        parts[0].trim(),  // dateEntered
+                        parts[1].trim(),  // stockLabel
+                        parts[2].trim(),  // brand
+                        parts[3].trim(),  // engineNumber
+                        parts[4].trim()   // status
                     );
-                    inventoryList.add(item);  // Add to ArrayList
+                    inventoryList.add(item);  // Automatic resizing - no index, no manual counting
+                    // NO manual increment needed - .size() is updated automatically
                 }
             }
             
